@@ -1,0 +1,4 @@
+requests
+inquirer
+matplotlib
+colorama

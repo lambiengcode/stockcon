@@ -65,8 +65,12 @@ def get_stock_data(symbol):
 
     url = f'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol={symbol}&interval=5min&apikey={api_key}'
     response = requests.get(url)
-    data = response.json()
-    return data
+    if response.status_code == 200:
+        data = response.json()
+        return data
+    else:
+        print(Fore.RED + f"Failed to fetch data for {symbol}. Error {response.status_code}.")
+        return None
 
 # Get news about a stock from Alpha Vantage
 
@@ -80,9 +84,12 @@ def get_stock_news(symbol):
     url = f'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers={symbol}&apikey={api_key}'
 
     response = requests.get(url)
-    data = response.json()
-
-    return data
+    if response.status_code == 200:
+        data = response.json()
+        return data
+    else:
+        print(Fore.RED + f"Failed to fetch data for {symbol}. Error {response.status_code}.")
+        return None
 
 # Add stock to the list
 def add_stock(symbol):

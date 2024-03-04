@@ -1,0 +1,8 @@
+README.md
+setup.py
+stockcon.egg-info/PKG-INFO
+stockcon.egg-info/SOURCES.txt
+stockcon.egg-info/dependency_links.txt
+stockcon.egg-info/entry_points.txt
+stockcon.egg-info/requires.txt
+stockcon.egg-info/top_level.txt

@@ -1,0 +1,7 @@
+Metadata-Version: 2.1
+Name: stockcon
+Version: 0.1
+Requires-Dist: requests
+Requires-Dist: inquirer
+Requires-Dist: matplotlib
+Requires-Dist: colorama
