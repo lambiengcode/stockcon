@@ -82,9 +82,9 @@ stockcon
    Exit
 ```
 
-- Set API Key: Allows you to set your API key for accessing the Alpha Vantage API. You will be prompted to enter your API key, which will be saved securely for future use.
-- Add Stock: Enables you to add a stock symbol to your watchlist. You will be asked to input the symbol of the stock you wish to add.
-- Remove Stock: Lets you remove a stock symbol from your watchlist. You will be prompted to enter the symbol of the stock you want to remove.
-- Show Stock Information: Displays information about a specific stock, including its symbol, last refreshed timestamp, interval, output size, and time zone. You will be prompted to select a stock symbol from your watchlist.
-- Plot Stock Chart: Generates a candlestick chart for a selected stock symbol based on the intraday data retrieved from the Alpha Vantage API. You will be prompted to choose a stock symbol from your watchlist.
-- View Stock News: Fetches and displays the latest news related to a selected stock symbol from the Alpha Vantage API. You will be prompted to select a stock symbol from your watchlist.
+- `Set API Key`: Allows you to set your API key for accessing the Alpha Vantage API. You will be prompted to enter your API key, which will be saved securely for future use.
+- `Add Stock`: Enables you to add a stock symbol to your watchlist. You will be asked to input the symbol of the stock you wish to add.
+- `Remove Stock`: Lets you remove a stock symbol from your watchlist. You will be prompted to enter the symbol of the stock you want to remove.
+- `Show Stock Information`: Displays information about a specific stock, including its symbol, last refreshed timestamp, interval, output size, and time zone. You will be prompted to select a stock symbol from your watchlist.
+- `Plot Stock Chart`: Generates a candlestick chart for a selected stock symbol based on the intraday data retrieved from the Alpha Vantage API. You will be prompted to choose a stock symbol from your watchlist.
+- `View Stock News`: Fetches and displays the latest news related to a selected stock symbol from the Alpha Vantage API. You will be prompted to select a stock symbol from your watchlist.

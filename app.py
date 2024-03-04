@@ -4,11 +4,16 @@ import requests
 from colorama import Fore, Style
 from candlestick_chart import Candle, Chart
 import inquirer
+from datetime import datetime, timedelta
+import asciichartpy
 
 API_KEY_FILE = "secret/api_key.json"
 STOCK_LIST_FILE = "secret/stocks.json"
+STOCK_DATA_DIR = "stock_data"
 
 # Function to clear the screen
+
+
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
@@ -46,6 +51,37 @@ def save_stock_list(stock_list):
     with open(STOCK_LIST_FILE, "w") as f:
         json.dump(stock_list, f)
 
+# Load stock data from file
+
+
+def load_stock_data(symbol):
+    file_path = os.path.join(STOCK_DATA_DIR, f"{symbol}.json")
+    if os.path.exists(file_path):
+        with open(file_path, "r") as f:
+            return json.load(f)
+    else:
+        return None
+
+# Save stock data to file
+
+
+def save_stock_data(symbol, data):
+    if not os.path.exists(STOCK_DATA_DIR):
+        os.makedirs(STOCK_DATA_DIR)
+    file_path = os.path.join(STOCK_DATA_DIR, f"{symbol}.json")
+    with open(file_path, "w") as f:
+        json.dump(data, f)
+
+# Check if stock data is stale (older than 5 minutes)
+
+
+def is_stock_data_stale(symbol):
+    file_path = os.path.join(STOCK_DATA_DIR, f"{symbol}.json")
+    if os.path.exists(file_path):
+        modification_time = datetime.fromtimestamp(os.path.getmtime(file_path))
+        return (datetime.now() - modification_time) > timedelta(minutes=5)
+    return True
+
 # Set API key
 
 
@@ -58,6 +94,10 @@ def set_api_key():
 
 
 def get_stock_data(symbol):
+    if not is_stock_data_stale(symbol):
+        # Load data from file if not stale
+        return load_stock_data(symbol)
+
     api_key = load_api_key()
     if api_key is None:
         print(Fore.RED + "API key is not set. Please set the API key first.")
@@ -67,31 +107,17 @@ def get_stock_data(symbol):
     response = requests.get(url)
     if response.status_code == 200:
         data = response.json()
+        # Save data to file
+        save_stock_data(symbol, data)
         return data
     else:
-        print(Fore.RED + f"Failed to fetch data for {symbol}. Error {response.status_code}.")
-        return None
-
-# Get news about a stock from Alpha Vantage
-
-
-def get_stock_news(symbol):
-    api_key = load_api_key()
-    if api_key is None:
-        print(Fore.RED + "API key is not set. Please set the API key first.")
-        return None
-
-    url = f'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers={symbol}&apikey={api_key}'
-
-    response = requests.get(url)
-    if response.status_code == 200:
-        data = response.json()
-        return data
-    else:
-        print(Fore.RED + f"Failed to fetch data for {symbol}. Error {response.status_code}.")
+        print(
+            Fore.RED + f"Failed to fetch data for {symbol}. Error {response.status_code}.")
         return None
 
 # Add stock to the list
+
+
 def add_stock(symbol):
     stock_list = load_stock_list()
     if symbol not in stock_list:
@@ -141,9 +167,26 @@ def show_stock_info():
     else:
         print(Fore.RED + "Failed to fetch stock information.")
 
+# Function to calculate moving averages
+
+
+def calculate_moving_average(data, window_size):
+    moving_averages = []
+    for i in range(len(data) - window_size + 1):
+        window = data[i:i+window_size]
+        average = sum(window) / window_size
+        moving_averages.append(average)
+    return moving_averages
+
+# Add moving averages to chart
+def add_moving_averages_chart(closes):
+    window_sizes = [20, 50]
+    for window_size in window_sizes:
+        moving_averages = calculate_moving_average(closes, window_size)
+        print(Fore.CYAN + f"Moving Average ({window_size}):")
+        print(asciichartpy.plot(moving_averages, {'height': 5}))
+
 # Plot stock chart
-
-
 def plot_stock_chart():
     stock_list = load_stock_list()
     if not stock_list:
@@ -161,6 +204,7 @@ def plot_stock_chart():
     stock_data = get_stock_data(symbol)
     if stock_data is not None and 'Time Series (5min)' in stock_data:
         candles = []
+        close_prices = []  # List to store close prices for moving averages
         for key, value in stock_data['Time Series (5min)'].items():
             open_price = float(value['1. open'])
             high_price = float(value['2. high'])
@@ -169,14 +213,27 @@ def plot_stock_chart():
             candle = Candle(open=open_price, close=close_price,
                             high=high_price, low=low_price)
             candles.append(candle)
+            close_prices.append(close_price)
 
         chart = Chart(candles, title=f"Candlestick Chart for {symbol}")
         chart.set_name(symbol)
+
+        new_width = 150
+        new_height = 25
+        chart.update_size(new_width, new_height)
+
+        # Draw chart
         chart.draw()
+
+        # Add moving averages
+        add_moving_averages_chart(close_prices)
+
     else:
         print(Fore.RED + "Failed to fetch stock data.")
 
 # View news for a stock
+
+
 def view_stock_news():
     stock_list = load_stock_list()
     if not stock_list:
@@ -185,10 +242,11 @@ def view_stock_news():
 
     questions = [
         inquirer.List('symbol',
-            message='Select a stock symbol:',
-            choices=stock_list,
-        ),
+                      message='Select a stock symbol:',
+                      choices=stock_list,
+                      ),
     ]
+
     answer = inquirer.prompt(questions)
     symbol = answer['symbol']
     news_data = get_stock_news(symbol)
